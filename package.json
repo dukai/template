@@ -1,0 +1,24 @@
+{
+  "name": "template",
+  "version": "1.0.0",
+  "description": "A simple javascript template engine",
+  "main": "template.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dukai/template.git"
+  },
+  "keywords": [
+    "javascript",
+    "template",
+    "tool"
+  ],
+  "author": "dukai",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dukai/template/issues"
+  },
+  "homepage": "https://github.com/dukai/template#readme"
+}
