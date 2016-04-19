@@ -1,15 +1,25 @@
-var cache = {};
-var debug = true;
+if (typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function') {
+    var define = function (factory) {
+        factory(require, exports, module);
+    };
+}
+define(function(require, exports, module){
 
-OPEN_TAG = '<?';
-CLOSE_TAG = '?>';
+	var tools = require('comp/tools');
 
-var Template = function(tmplContent){
+	var cache = {};
+	var debug = true;
 
-    this.vars = {};
-    this.fns = {};
+	OPEN_TAG = '<?';
+	CLOSE_TAG = '?>';
 
-    var fnBody = "var ___tpContent = '',\
+	var Template = function(tmplContent){
+
+		this.vars = {};
+		this.fns = {};
+		this.helpers = {};
+		
+		var fnBody = "var ___tpContent = '',\
 		print = function(){\
 			___tpContent += [].join.call(arguments, '');\
 		};\
@@ -17,88 +27,94 @@ var Template = function(tmplContent){
 		return ___tpContent;";
 
 
-    this.fn = new Function(fnBody);
-    Template.debug && console.log(fnBody);
-};
+		this.fn = new Function(fnBody);
+		Template.debug && console.log(fnBody);
+	};
 
-Template.prototype = {
-    /**
-     * render template
-     * @param mix data
-     * @param boolean return string or dom
-     * @return mix
-     */
-    render: function(data){
-        this.checkVarsAndFns(data);
-        var html = this.fn.call(data);
-        return html;
-    },
+	Template.prototype = {
+		render: function(data){
+			this.checkVarsAndFns(data);
 
-    checkVarsAndFns: function(data){
-        for(var key in this.vars){
-            if(data[key] === undefined){
-                Template.debug && console.warn("Variable \"" + key + "\" does not exists");
-                data[key] = '';
-            }
-        }
+			data = tools.mix(this.helpers, data);
+			var html = this.fn.call(data);
 
-        for(var key in this.fns){
-            if(data[key] === undefined){
-                Template.debug && console.warn("Function \"" + key + "\" does not exists");
-                data[key] = this.emptyFn;
-            }
-        }
-    },
+			return html;
+		},
 
-    emptyFn: function(){
-        return '';
-    },
+		checkVarsAndFns: function(data){
+			for(var key in this.vars){
+				if(data[key] === undefined){
+					Template.debug && console.warn("Variable \"" + key + "\" does not exists");
+					data[key] = '';
+				}
+			}
 
-    parseVars: function(source){
-        var result = null;
-        var regexp = /this\.([\w\$]+)\(*/g;
-        while ((result = regexp.exec(arguments[0])) != null)  {
-            // console.log(result);
+			for(var key in this.fns){
+				if(data[key] === undefined){
+					Template.debug && console.warn("Function \"" + key + "\" does not exists");
+					data[key] = this.emptyFn;
+				}
+			}
+		},
 
-            if(result[0].substr(-1, 1) == "("){
-                //方法
-                this.fns[result[1]] = 1;
-            }else{
-                //变量
-                this.vars[result[1]] = 1;
-            }
-        }
-    },
+		emptyFn: function(){
+			return '';
+		},
 
-    compile: function(source){
-        var self = this;
-        //预处理模板内容
-        source = source.replace(/('|"|\\)/g, "\\$1")
-            .replace(/\r/g, "")
-            .replace(/\t/g, "\\t")
-            .replace(/\n/g, "\\n");
+		parseVars: function(source){
+			var result = null;
+			var regexp = /this\.([\w\$]+)\(*/g;
+			while ((result = regexp.exec(arguments[0])) != null)  {
+				// console.log(result);
 
-        var closeTagEqualRegExp = new RegExp('\t=(.*?)' + CLOSE_TAG.replace(/\?/g, '\\?'), 'g');
-        var closeTagCommonRegExp = new RegExp('\t(.*?)' + CLOSE_TAG.replace(/\?/g, '\\?'), 'g');
+				if(result[0].substr(-1, 1) == "("){
+					//方法
+					this.fns[result[1]] = 1;
+				}else{
+					//变量
+					this.vars[result[1]] = 1;
+				}
+			}
+		},
 
-        //分析模板语法
-        source = source.split(OPEN_TAG).join('\t')
-            .replace(closeTagEqualRegExp, function(){
-                self.parseVars(arguments[0]);
-                var target =  arguments[1].replace(/\\t/g, ' ').replace(/\\n/g, '\n').replace(/\\r/, '\r').replace(/\\('|"|\\)/g, "$1");
-                return "' + (" + target + ");\r\n___tpContent += '";
-            })
-            .replace(closeTagCommonRegExp, function(){
-                self.parseVars(arguments[0]);
-                var target = arguments[1].replace(/\\t/g, ' ').replace(/\\n/g, '\n').replace(/\\r/, '\r').replace(/\\('|"|\\)/g, "$1");
-                return "';\r\n" + target + "\r\n___tpContent += '";
-            });
+		compile: function(source){
+			var self = this;
+			//预处理模板内容
+			source = source.replace(/('|"|\\)/g, "\\$1")
+				.replace(/\r/g, "")
+				.replace(/\t/g, "\\t")
+				.replace(/\n/g, "\\n");
 
-        return source;
-    }
-};
+			var closeTagEqualRegExp = new RegExp('\t=(.*?)' + CLOSE_TAG.replace(/\?/g, '\\?'), 'g');
+			var closeTagCommonRegExp = new RegExp('\t(.*?)' + CLOSE_TAG.replace(/\?/g, '\\?'), 'g');
+
+			//分析模板语法
+			source = source.split(OPEN_TAG).join('\t')
+				.replace(closeTagEqualRegExp, function(){
+					self.parseVars(arguments[0]);
+					var target =  arguments[1].replace(/\\t/g, ' ').replace(/\\n/g, '\n').replace(/\\r/, '\r').replace(/\\('|"|\\)/g, "$1");
+					return "' + (" + target + ");\r\n___tpContent += '";
+				})
+				.replace(closeTagCommonRegExp, function(){
+					self.parseVars(arguments[0]);
+					var target = arguments[1].replace(/\\t/g, ' ').replace(/\\n/g, '\n').replace(/\\r/, '\r').replace(/\\('|"|\\)/g, "$1");
+					return "';\r\n" + target + "\r\n___tpContent += '";
+				});
+
+			return source;
+		},
+
+		setHelpers: function(helpers){
+			this.helpers = tools.mix(this.helpers, helpers);
+		},
+		setHelper: function(key, value){
+			this.helpers[key] = value;
+		}
+	};
 
 
-Template.debug = false;
+	Template.debug = false;
 
-module.exports = Template;
+	module.exports = Template;
+});
+
