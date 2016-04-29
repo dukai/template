@@ -32,13 +32,25 @@ define(function(require, exports, module){
 	};
 
 	Template.prototype = {
-		render: function(data){
+		render: function(data, isDom){
 			this.checkVarsAndFns(data);
 
 			data = tools.mix(this.helpers, data);
 			var html = this.fn.call(data);
+			if(isDom && typeof document == undefined){
+				var div = document.createElement('div');
+				div.innerHTML = html;
+				var fragment = document.createDocumentFragment();
+				var nodeList = div.children;
+				while(nodeList.length > 0){
+					fragment.appendChild(nodeList[0]);
+				}
 
-			return html;
+				return fragment;
+
+			}else{
+				return html;
+			}
 		},
 
 		checkVarsAndFns: function(data){
