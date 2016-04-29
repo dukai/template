@@ -5,7 +5,7 @@ if (typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeo
 }
 define(function(require, exports, module){
 
-	var tools = require('./tools');
+	var tools = require('dtools');
 
 	var cache = {};
 	var debug = true;
