@@ -33,9 +33,9 @@ define(function(require, exports, module){
 
 	Template.prototype = {
 		render: function(data, isDom){
-			this.checkVarsAndFns(data);
-
 			data = tools.mix(this.helpers, data);
+			this.checkVarsAndFns(data);
+			
 			var html = this.fn.call(data);
 			if(isDom && typeof document == undefined){
 				var div = document.createElement('div');
