@@ -1,7 +1,7 @@
 {
   "name": "template",
   "description": "A simple javascript template engine that support native JavaScript grammar.",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "homepage": "https://github.com/dukai/template#readme",
   "author": {
     "name": "dukai",
