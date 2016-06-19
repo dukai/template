@@ -1,0 +1,7 @@
+<h1>HELLO WORLD</h1>
+
+<ul>
+  <?for(let i = 0, len = this.list.length; i < len; i++){?>
+    <?= this.include('view/item.tp', this.list[i])?>
+  <?}?>
+</ul>

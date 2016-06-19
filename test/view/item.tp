@@ -1,0 +1,5 @@
+<li>
+  <a><?=this.name?></a>
+  <time><?=this.date?></time>
+</li>
+

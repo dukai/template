@@ -1,0 +1,27 @@
+{
+  "name": "template",
+  "description": "A simple javascript template engine that support native JavaScript grammar.",
+  "main": "template.js",
+  "authors": [
+    "dukai"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "javascript",
+    "template",
+    "tool"
+  ],
+  "homepage": "https://github.com/dukai/template",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "requirejs": "^2.2.0",
+    "text": "requirejs/text#^2.0.15",
+    "dtools": "https://github.com/dukai/dtools.git"
+  }
+}

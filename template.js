@@ -33,7 +33,7 @@ define(function(require, exports, module){
 
 	Template.prototype = {
 		render: function(data, isDom){
-			data = tools.mix(this.helpers, data);
+			data = tools.mix(data, this.helpers);
 			this.checkVarsAndFns(data);
 			
 			var html = this.fn.call(data);
