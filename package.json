@@ -20,7 +20,7 @@
       "url": "https://github.com/dukai/template/blob/master/LICENSE"
     }
   ],
-  "main": "template.js",
+  "main": "index.js",
   "engines": {
     "node": ">= 0.8.0"
   },
