@@ -3,4 +3,130 @@ if (typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeo
         factory(require, exports, module);
     };
 }
-define("template",["require","exports","module","dtools"],function(e,t,n){var r=e("dtools");OPEN_TAG="<?",CLOSE_TAG="?>";var s=function(e){this.vars={},this.fns={},this.helpers={};var t="var ___tpContent = '',\t\tprint = function(){\t\t\t___tpContent += [].join.call(arguments, '');\t\t};\t\t___tpContent += '"+this.compile(e)+"';\t\treturn ___tpContent;";this.fn=new Function(t),s.debug&&console.log(t)};s.prototype={render:function(e,t){e=r.mix(e,this.helpers),this.checkVarsAndFns(e);var n=this.fn.call(e);if(t&&void 0==typeof document){var s=document.createElement("div");s.innerHTML=n;for(var o=document.createDocumentFragment(),i=s.children;i.length>0;)o.appendChild(i[0]);return o}return n},checkVarsAndFns:function(e){for(var t in this.vars)void 0===e[t]&&(s.debug&&console.warn('Variable "'+t+'" does not exists'),e[t]="");for(var t in this.fns)void 0===e[t]&&(s.debug&&console.warn('Function "'+t+'" does not exists'),e[t]=this.emptyFn)},emptyFn:function(){return""},parseVars:function(e){for(var t=null,n=/this\.([\w\$]+)\(*/g;null!=(t=n.exec(arguments[0]));)"("==t[0].substr(-1,1)?this.fns[t[1]]=1:this.vars[t[1]]=1},compile:function(e){var t=this;e=e.replace(/('|"|\\)/g,"\\$1").replace(/\r/g,"").replace(/\t/g,"\\t").replace(/\n/g,"\\n");var n=new RegExp("\t=(.*?)"+CLOSE_TAG.replace(/\?/g,"\\?"),"g"),r=new RegExp("\t(.*?)"+CLOSE_TAG.replace(/\?/g,"\\?"),"g");return e=e.split(OPEN_TAG).join("\t").replace(n,function(){t.parseVars(arguments[0]);var e=arguments[1].replace(/\\t/g," ").replace(/\\n/g,"\n").replace(/\\r/,"\r").replace(/\\('|"|\\)/g,"$1");return"' + ("+e+");\r\n___tpContent += '"}).replace(r,function(){t.parseVars(arguments[0]);var e=arguments[1].replace(/\\t/g," ").replace(/\\n/g,"\n").replace(/\\r/,"\r").replace(/\\('|"|\\)/g,"$1");return"';\r\n"+e+"\r\n___tpContent += '"})},setHelpers:function(e){this.helpers=r.mix(this.helpers,e)},setHelper:function(e,t){this.helpers[e]=t}},s.debug=!1,n.exports=s});
+define(function(require, exports, module){
+
+	var tools = require('dtools');
+
+	var cache = {};
+	var debug = true;
+
+	OPEN_TAG = '<?';
+	CLOSE_TAG = '?>';
+
+	var Template = function(tmplContent){
+
+		this.vars = {};
+		this.fns = {};
+		this.helpers = {};
+		
+		var fnBody = "var ___tpContent = '',\
+		print = function(){\
+			___tpContent += [].join.call(arguments, '');\
+		};\
+		___tpContent += '" + this.compile(tmplContent) + "';\
+		return ___tpContent;";
+
+
+		this.fn = new Function(fnBody);
+		Template.debug && console.log(fnBody);
+	};
+
+	Template.prototype = {
+		render: function(data, isDom){
+			data = tools.mix(data, this.helpers);
+			this.checkVarsAndFns(data);
+			
+			var html = this.fn.call(data);
+			if(isDom && typeof document == undefined){
+				var div = document.createElement('div');
+				div.innerHTML = html;
+				var fragment = document.createDocumentFragment();
+				var nodeList = div.children;
+				while(nodeList.length > 0){
+					fragment.appendChild(nodeList[0]);
+				}
+
+				return fragment;
+
+			}else{
+				return html;
+			}
+		},
+
+		checkVarsAndFns: function(data){
+			for(var key in this.vars){
+				if(data[key] === undefined){
+					Template.debug && console.warn("Variable \"" + key + "\" does not exists");
+					data[key] = '';
+				}
+			}
+
+			for(var key in this.fns){
+				if(data[key] === undefined){
+					Template.debug && console.warn("Function \"" + key + "\" does not exists");
+					data[key] = this.emptyFn;
+				}
+			}
+		},
+
+		emptyFn: function(){
+			return '';
+		},
+
+		parseVars: function(source){
+			var result = null;
+			var regexp = /this\.([\w\$]+)\(*/g;
+			while ((result = regexp.exec(arguments[0])) != null)  {
+				// console.log(result);
+
+				if(result[0].substr(-1, 1) == "("){
+					//方法
+					this.fns[result[1]] = 1;
+				}else{
+					//变量
+					this.vars[result[1]] = 1;
+				}
+			}
+		},
+
+		compile: function(source){
+			var self = this;
+			//预处理模板内容
+			source = source.replace(/('|"|\\)/g, "\\$1")
+				.replace(/\r/g, "")
+				.replace(/\t/g, "\\t")
+				.replace(/\n/g, "\\n");
+
+			var closeTagEqualRegExp = new RegExp('\t=(.*?)' + CLOSE_TAG.replace(/\?/g, '\\?'), 'g');
+			var closeTagCommonRegExp = new RegExp('\t(.*?)' + CLOSE_TAG.replace(/\?/g, '\\?'), 'g');
+
+			//分析模板语法
+			source = source.split(OPEN_TAG).join('\t')
+				.replace(closeTagEqualRegExp, function(){
+					self.parseVars(arguments[0]);
+					var target =  arguments[1].replace(/\\t/g, ' ').replace(/\\n/g, '\n').replace(/\\r/, '\r').replace(/\\('|"|\\)/g, "$1");
+					return "' + (" + target + ");\r\n___tpContent += '";
+				})
+				.replace(closeTagCommonRegExp, function(){
+					self.parseVars(arguments[0]);
+					var target = arguments[1].replace(/\\t/g, ' ').replace(/\\n/g, '\n').replace(/\\r/, '\r').replace(/\\('|"|\\)/g, "$1");
+					return "';\r\n" + target + "\r\n___tpContent += '";
+				});
+
+			return source;
+		},
+
+		setHelpers: function(helpers){
+			this.helpers = tools.mix(this.helpers, helpers);
+		},
+		setHelper: function(key, value){
+			this.helpers[key] = value;
+		}
+	};
+
+
+	Template.debug = false;
+
+	module.exports = Template;
+});
+

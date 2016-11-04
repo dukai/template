@@ -1,6 +1,6 @@
 'use strict';
 
-var Template = require('../template.js');
+var Template = require('../index.js');
 
 /*
   ======== A Handy Little Nodeunit Reference ========

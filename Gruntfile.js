@@ -13,7 +13,7 @@ module.exports = function(grunt) {
       },
 
       forNode: {
-        src: ['lib/umd-header.js', '*.min.js'],
+        src: ['lib/umd-header.js', 'template.js'],
         dest: 'index.js',
       }
     },
@@ -84,6 +84,6 @@ module.exports = function(grunt) {
 
   // Default task.
   grunt.registerTask('default', ['jshint', 'nodeunit']);
-  grunt.registerTask('release', ['requirejs', 'concat:forNode', 'concat:dist', 'uglify']);
+  grunt.registerTask('release', ['concat:forNode', 'requirejs', 'concat:dist', 'uglify']);
 
 };
