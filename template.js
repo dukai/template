@@ -32,7 +32,7 @@ define(function(require, exports, module){
 			this.checkVarsAndFns(data);
 			
 			var html = this.fn.call(data);
-			if(isDom && typeof document == undefined){
+			if(isDom && typeof document !== undefined){
 				var div = document.createElement('div');
 				div.innerHTML = html;
 				var fragment = document.createDocumentFragment();
